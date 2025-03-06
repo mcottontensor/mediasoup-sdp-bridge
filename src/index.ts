@@ -38,11 +38,15 @@ export class SdpEndpoint {
 
   private consumers: Consumer[] = [];
 
+  private consumeData: boolean;
+
   constructor(webRtcTransport: WebRtcTransport, localCaps: RtpCapabilities) {
     this.webRtcTransport = webRtcTransport;
     this.transport = webRtcTransport;
 
     this.localCaps = localCaps;
+
+    this.consumeData = false;
   }
 
   // Receive media into mediasoup
@@ -218,6 +222,10 @@ export class SdpEndpoint {
     this.consumers.push(consumer);
   }
 
+  public addConsumeData(): void {
+      this.consumeData = true;
+  }
+
   public createOffer(): string {
     if (this.localSdp) {
       throw new Error(
@@ -255,6 +263,10 @@ export class SdpEndpoint {
         streamId: sendMsid,
         trackId: `${sendMsid}-${kind}`,
       });
+    }
+
+    if (this.consumeData) {
+        sdpBuilder.receiveSctpAssociation();
     }
 
     this.localSdp = sdpBuilder.getSdp();
