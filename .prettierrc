@@ -1,3 +1,9 @@
 # Use the default formatting style from Prettier.
 # No exceptions.
-{}
+{
+    "printWidth": 110,
+    "trailingComma": "none",
+    "tabWidth": 4,
+    "semi": true,
+    "singleQuote": true
+}

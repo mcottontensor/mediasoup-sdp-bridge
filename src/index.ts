@@ -1,6 +1,6 @@
-import * as MsSdpUtils from "mediasoup-client/lib/handlers/sdp/commonUtils";
-import { RemoteSdp } from "mediasoup-client/lib/handlers/sdp/RemoteSdp";
-import { IceCandidate as ClientIceCandidate } from "mediasoup-client/lib/Transport";
+import * as MsSdpUtils from 'mediasoup-client/lib/handlers/sdp/commonUtils';
+import { RemoteSdp } from 'mediasoup-client/lib/handlers/sdp/RemoteSdp';
+import { IceCandidate as ClientIceCandidate } from 'mediasoup-client/lib/Transport';
 
 import {
     Consumer,
@@ -9,14 +9,14 @@ import {
     RtpCapabilities,
     RtpParameters,
     Transport,
-    WebRtcTransport,
-} from "mediasoup/node/lib/types";
+    WebRtcTransport
+} from 'mediasoup/node/lib/types';
 
-import * as SdpTransform from "sdp-transform";
-import { v4 as uuidv4 } from "uuid";
+import * as SdpTransform from 'sdp-transform';
+import { v4 as uuidv4 } from 'uuid';
 
-import * as BrowserRtpCapabilities from "./BrowserRtpCapabilities";
-import * as SdpUtils from "./SdpUtils";
+import * as BrowserRtpCapabilities from './BrowserRtpCapabilities';
+import * as SdpUtils from './SdpUtils';
 
 export class SdpEndpoint {
     // TODO: Currently this only handles WebRTC. At some point the implementation
@@ -57,9 +57,7 @@ export class SdpEndpoint {
 
     public async processOffer(sdpOffer: string, scalabilityMode: string): Promise<Producer[]> {
         if (this.remoteSdp) {
-            throw new Error(
-                "[SdpEndpoint.processOffer] A remote description was already set"
-            );
+            throw new Error('[SdpEndpoint.processOffer] A remote description was already set');
         }
 
         this.remoteSdp = sdpOffer;
@@ -71,7 +69,7 @@ export class SdpEndpoint {
         // https://github.com/clux/sdp-transform/issues/94
         // Force "payloads" to be a string field.
         for (const media of remoteSdpObj.media) {
-            media.payloads = "" + media.payloads;
+            media.payloads = '' + media.payloads;
         }
 
         // DEBUG: Uncomment for details.
@@ -84,11 +82,11 @@ export class SdpEndpoint {
         let dtlsParameters;
         try {
             dtlsParameters = MsSdpUtils.extractDtlsParameters({
-                sdpObject: remoteSdpObj,
+                sdpObject: remoteSdpObj
             });
         } catch (error) {
             const err = new Error(
-                "[SdpEndpoint.processOffer] Unexpected error while extracting DTLS parameters"
+                '[SdpEndpoint.processOffer] Unexpected error while extracting DTLS parameters'
             );
             if (error instanceof Error) {
                 err.message += `; error: ${error.message}`;
@@ -98,23 +96,23 @@ export class SdpEndpoint {
             throw err;
         }
         await this.webRtcTransport.connect({
-            dtlsParameters,
+            dtlsParameters
         });
 
         // Get a list of media and make Producers for all of them.
         // NOTE: Only up to 1 audio and 1 video are accepted.
         const mediaKinds = new Set<MediaKind>();
         for (const media of remoteSdpObj.media) {
-            if (!("rtp" in media)) {
+            if (!('rtp' in media)) {
                 // Skip media that is not RTP.
                 continue;
             }
-            if (!("direction" in media)) {
+            if (!('direction' in media)) {
                 // Skip media for which the direction is unknown.
                 continue;
             }
 
-            const mediaKind = media.type as MediaKind
+            const mediaKind = media.type as MediaKind;
 
             if (mediaKinds.has(mediaKind)) {
                 // Skip media if the same kind was already processed.
@@ -140,7 +138,7 @@ export class SdpEndpoint {
                 producer = await this.transport.produce({
                     kind: mediaKind,
                     rtpParameters: producerParams,
-                    paused: false,
+                    paused: false
                 });
             } catch (error) {
                 let message = `[SdpEndpoint.processOffer] Cannot create mediasoup Producer, kind: ${mediaKind}`;
@@ -173,9 +171,7 @@ export class SdpEndpoint {
 
     public createAnswer(): string {
         if (this.localSdp) {
-            throw new Error(
-                "[SdpEndpoint.createAnswer] A local description was already set"
-            );
+            throw new Error('[SdpEndpoint.createAnswer] A local description was already set');
         }
 
         const sdpBuilder: RemoteSdp = new RemoteSdp({
@@ -183,7 +179,7 @@ export class SdpEndpoint {
             iceCandidates: this.webRtcTransport.iceCandidates as ClientIceCandidate[],
             dtlsParameters: this.webRtcTransport.dtlsParameters,
             sctpParameters: this.webRtcTransport.sctpParameters,
-            planB: false,
+            planB: false
         });
 
         console.log("[SdpEndpoint.createAnswer] Make 'recvonly' SDP Answer");
@@ -197,7 +193,7 @@ export class SdpEndpoint {
                 offerRtpParameters: this.producerOfferParams[i],
                 answerRtpParameters: this.producers[i].rtpParameters,
                 codecOptions: undefined,
-                extmapAllowMixed: false,
+                extmapAllowMixed: false
             });
         }
 
@@ -223,9 +219,7 @@ export class SdpEndpoint {
 
     public createOffer(): string {
         if (this.localSdp) {
-            throw new Error(
-                "[SdpEndpoint.createOffer] A local description was already set"
-            );
+            throw new Error('[SdpEndpoint.createOffer] A local description was already set');
         }
 
         const sdpBuilder: RemoteSdp = new RemoteSdp({
@@ -233,7 +227,7 @@ export class SdpEndpoint {
             iceCandidates: this.webRtcTransport.iceCandidates as ClientIceCandidate[],
             dtlsParameters: this.webRtcTransport.dtlsParameters,
             sctpParameters: this.webRtcTransport.sctpParameters,
-            planB: false,
+            planB: false
         });
 
         // Make an MSID to be used for both "audio" and "video" kinds.
@@ -243,7 +237,7 @@ export class SdpEndpoint {
 
         let videoRtpParameters;
         for (let i = 0; i < this.consumers.length; i++) {
-            const mid = this.consumers[i].rtpParameters.mid ?? "nomid";
+            const mid = this.consumers[i].rtpParameters.mid ?? 'nomid';
             const kind = this.consumers[i].kind;
             const sendParams = this.consumers[i].rtpParameters;
 
@@ -261,7 +255,7 @@ export class SdpEndpoint {
                 // Parameters used to build the "msid" attribute:
                 // a=msid:<streamId> <trackId>
                 streamId: sendMsid,
-                trackId: `${sendMsid}-${kind}`,
+                trackId: `${sendMsid}-${kind}`
             });
         }
 
@@ -272,14 +266,14 @@ export class SdpEndpoint {
                 codecs: [videoRtpParameters.codecs[0]],
                 headerExtensions: videoRtpParameters.headerExtensions,
                 encodings: [{ ssrc: 1234 }],
-                rtcp: { cname: 'probator' },
+                rtcp: { cname: 'probator' }
             };
             sdpBuilder.receive({
                 mid: 'probator',
                 kind: 'video',
                 offerRtpParameters: rtpParameters,
                 streamId: 'probator',
-                trackId: 'probator',
+                trackId: 'probator'
             });
         }
 
@@ -294,9 +288,7 @@ export class SdpEndpoint {
 
     public async processAnswer(sdpAnswer: string): Promise<void> {
         if (this.remoteSdp) {
-            throw new Error(
-                "[SdpEndpoint.processAnswer] A remote description was already set"
-            );
+            throw new Error('[SdpEndpoint.processAnswer] A remote description was already set');
         }
 
         this.remoteSdp = sdpAnswer;
@@ -312,11 +304,11 @@ export class SdpEndpoint {
         let dtlsParameters;
         try {
             dtlsParameters = MsSdpUtils.extractDtlsParameters({
-                sdpObject: remoteSdpObj,
+                sdpObject: remoteSdpObj
             });
         } catch (error) {
             const err = new Error(
-                "[SdpEndpoint.processAnswer] Unexpected error while extracting DTLS parameters"
+                '[SdpEndpoint.processAnswer] Unexpected error while extracting DTLS parameters'
             );
             if (error instanceof Error) {
                 err.message += `; error: ${error.message}`;
@@ -346,10 +338,7 @@ export class SdpEndpoint {
     }
 }
 
-export function createSdpEndpoint(
-    webRtcTransport: WebRtcTransport,
-    localCaps: RtpCapabilities
-): SdpEndpoint {
+export function createSdpEndpoint(webRtcTransport: WebRtcTransport, localCaps: RtpCapabilities): SdpEndpoint {
     return new SdpEndpoint(webRtcTransport, localCaps);
 }
 
@@ -357,12 +346,9 @@ export function generateRtpCapabilities0(): RtpCapabilities {
     return BrowserRtpCapabilities.chrome;
 }
 
-export function generateRtpCapabilities1(
-    localCaps: RtpCapabilities,
-    remoteSdp: string
-): RtpCapabilities {
+export function generateRtpCapabilities1(localCaps: RtpCapabilities, remoteSdp: string): RtpCapabilities {
     // TODO: Use proper SDP Offer/Answer negotiation to obtain capabilities.
-    console.error("BUG [SdpEndpoint.generateRtpCapabilities1] Not implemented");
+    console.error('BUG [SdpEndpoint.generateRtpCapabilities1] Not implemented');
     process.exit(1);
 
     let caps: RtpCapabilities;
@@ -374,7 +360,7 @@ export function generateRtpCapabilities2(
     remoteCaps: RtpCapabilities
 ): RtpCapabilities {
     // TODO: Use matching to obtain capabilities.
-    console.error("BUG [SdpEndpoint.generateRtpCapabilities2] Not implemented");
+    console.error('BUG [SdpEndpoint.generateRtpCapabilities2] Not implemented');
     process.exit(1);
 
     let caps: RtpCapabilities;

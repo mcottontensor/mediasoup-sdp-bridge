@@ -1,17 +1,13 @@
 // TODO, FIXME: Here we're assuming that Unified Plan is the correct way to
 // handle the SDP messages. For a more robust handling, this should probably
 // depend on the actual type of SDP: plain, PlanB, or UnifiedPlan.
-import * as MsSdpUnifiedPlanUtils from "mediasoup-client/lib/handlers/sdp/unifiedPlanUtils";
+import * as MsSdpUnifiedPlanUtils from 'mediasoup-client/lib/handlers/sdp/unifiedPlanUtils';
 
-import * as MsSdpUtils from "mediasoup-client/lib/handlers/sdp/commonUtils";
-import * as MsOrtc from "mediasoup-client/lib/ortc";
-import {
-    MediaKind,
-    RtpCapabilities,
-    RtpParameters
-} from "mediasoup/node/lib/types";
-import { MediaAttributes } from "sdp-transform";
-import _ from "lodash";
+import * as MsSdpUtils from 'mediasoup-client/lib/handlers/sdp/commonUtils';
+import * as MsOrtc from 'mediasoup-client/lib/ortc';
+import { MediaKind, RtpCapabilities, RtpParameters } from 'mediasoup/node/lib/types';
+import { MediaAttributes } from 'sdp-transform';
+import _ from 'lodash';
 
 // SDP to RTP Capabilities and Parameters
 // ======================================
@@ -19,15 +15,12 @@ import _ from "lodash";
 // WARNING: This function works for SDP messages that contain ONLY 1 media
 // of each kind.
 // MsSdpUtils.extractRtpCapabilities() only works for 1 audio and 1 video.
-export function sdpToConsumerRtpCapabilities(
-    sdpObject: object,
-    localCaps: RtpCapabilities
-): RtpCapabilities {
+export function sdpToConsumerRtpCapabilities(sdpObject: object, localCaps: RtpCapabilities): RtpCapabilities {
     // Clone input to avoid side effect modifications.
     const _localCaps = JSON.parse(JSON.stringify(localCaps));
 
     const caps: RtpCapabilities = MsSdpUtils.extractRtpCapabilities({
-        sdpObject,
+        sdpObject
     });
 
     // DEBUG: Uncomment for details.
@@ -66,7 +59,7 @@ export function sdpToProducerRtpParameters(
     const _localCaps = JSON.parse(JSON.stringify(localCaps));
 
     const caps: RtpCapabilities = MsSdpUtils.extractRtpCapabilities({
-        sdpObject,
+        sdpObject
     });
 
     // DEBUG: Uncomment for details.
@@ -129,31 +122,30 @@ export function sdpToProducerRtpParameters(
     }
 
     const sdpMediaObj: MediaAttributes =
-        (sdpObject.media || []).find((m: { type: MediaKind }) => m.type === kind) ||
-        {};
+        (sdpObject.media || []).find((m: { type: MediaKind }) => m.type === kind) || {};
 
     // Fill `RtpParameters.mid`.
-    if ("mid" in sdpMediaObj) {
+    if ('mid' in sdpMediaObj) {
         producerParams.mid = String(sdpMediaObj.mid);
     } else {
-        producerParams.mid = kind === "audio" ? "0" : "1";
+        producerParams.mid = kind === 'audio' ? '0' : '1';
     }
 
     // Fill `RtpParameters.encodings`.
     {
-        if ("ssrcs" in sdpMediaObj) {
+        if ('ssrcs' in sdpMediaObj) {
             producerParams.encodings = MsSdpUnifiedPlanUtils.getRtpEncodings({
-                offerMediaObject: sdpMediaObj,
+                offerMediaObject: sdpMediaObj
             });
         } else {
             producerParams.encodings = [];
         }
 
-        if ("rids" in sdpMediaObj) {
+        if ('rids' in sdpMediaObj) {
             // FIXME: Maybe mediasoup's getRtpEncodings() should just be improved
             // to include doing this, so we don't need to branch an if() here.
             sdpMediaObj.rids
-                ?.filter((rid) => rid.direction === "send")
+                ?.filter((rid) => rid.direction === 'send')
                 .forEach((rid, i) => {
                     producerParams.encodings![i] = {
                         ...producerParams.encodings![i],
@@ -165,11 +157,11 @@ export function sdpToProducerRtpParameters(
                         // but it doesn't tell the amount of temporal layers.
                         // Here we asume that all implementations are hardcoded to generate
                         // exactly 3 temporal layers (verified with Chrome and Firefox).
-                        scalabilityMode: "L1T3",
+                        scalabilityMode: 'L1T3'
                     };
                 });
         } else {
-            if (kind === "video") {
+            if (kind === 'video') {
                 for (const encoding of producerParams.encodings) {
                     encoding.scalabilityMode = scalabilityMode;
                 }
@@ -180,8 +172,8 @@ export function sdpToProducerRtpParameters(
     // Fill `RtpParameters.rtcp`.
     producerParams.rtcp = {
         cname: MsSdpUtils.getCname({ offerMediaObject: sdpMediaObj }),
-        reducedSize: (sdpMediaObj.rtcpRsize ?? "") === "rtcp-rsize",
-        mux: (sdpMediaObj.rtcpMux ?? "") === "rtcp-mux",
+        reducedSize: (sdpMediaObj.rtcpRsize ?? '') === 'rtcp-rsize',
+        mux: (sdpMediaObj.rtcpMux ?? '') === 'rtcp-mux'
     };
 
     // DEBUG: Uncomment for details.
