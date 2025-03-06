@@ -10,7 +10,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mcottontensor/mediasoup-sdp-bridge.git"
+    "url": "git+https://github.com/mcottontensor/mediasoup-sdp-bridge.git"
   },
   "funding": {
     "type": "opencollective",

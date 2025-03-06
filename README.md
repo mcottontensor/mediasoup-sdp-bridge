@@ -1,3 +1,8 @@
+# Forked
+Forked from https://github.com/OpenVidu/mediasoup-sdp-bridge
+Which was forked from https://github.com/versatica/mediasoup-sdp-bridge
+Which is a placeholder for a project to supply SDP behaviour to a mediasoup application.
+
 # mediasoup-sdp-bridge v3
 
 [![][npm-shield-mediasoup-sdp-bridge]][npm-mediasoup-sdp-bridge]
