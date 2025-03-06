@@ -1,10 +1,11 @@
 {
     "name": "@epicgames-ps/mediasoup-sdp-bridge",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Node.js library to allow integration of SDP based clients with mediasoup",
     "contributors": [
         "Iñaki Baz Castillo <ibc@aliax.net> (https://inakibaz.me)",
-        "Juan Navarro <juan.navarro@gmx.es> (https://github.com/j1elo)"
+        "Juan Navarro <juan.navarro@gmx.es> (https://github.com/j1elo)",
+        "Matthew Cotton <matt@tensorworks.com.au> (https://github.com/mcottontensor)"
     ],
     "homepage": "https://mediasoup.org",
     "license": "ISC",
