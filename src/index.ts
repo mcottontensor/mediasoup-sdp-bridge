@@ -55,7 +55,7 @@ export class SdpEndpoint {
   // * processOffer
   // * createAnswer
 
-  public async processOffer(sdpOffer: string): Promise<Producer[]> {
+  public async processOffer(sdpOffer: string, scalabilityMode: string): Promise<Producer[]> {
     if (this.remoteSdp) {
       throw new Error(
         "[SdpEndpoint.processOffer] A remote description was already set"
@@ -136,7 +136,8 @@ export class SdpEndpoint {
       const producerParams = SdpUtils.sdpToProducerRtpParameters(
         remoteSdpObj,
         this.localCaps,
-        mediaKind
+        mediaKind,
+        scalabilityMode
       );
 
       // Add a new Producer for the given media.
